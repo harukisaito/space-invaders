@@ -10,7 +10,6 @@ public class Ship : MonoBehaviour
 	[SerializeField]
 	private Rigidbody2D ship;
 
-	// Use this for initialization
 	void Start () {
 		ship = GetComponent<Rigidbody2D>();
 	}
@@ -25,12 +24,7 @@ public class Ship : MonoBehaviour
 			ship.AddForce(movement * speed);
 		}
 	}
-
-	void OnCollisionEnter2D()
-	{
-		speed = 0;
-	}
-
+	
 	public void GoToObjectPool()
 	{
 		transform.position = GameControl.instance.ShipPoolPos;

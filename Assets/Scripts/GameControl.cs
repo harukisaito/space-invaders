@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -11,6 +12,9 @@ public class GameControl : MonoBehaviour
 
 	[SerializeField]
 	private GameObject ship;
+
+	[SerializeField]
+	private GameObject redInvader;
 
 	[SerializeField]
 	private int difficulty;
@@ -31,6 +35,9 @@ public class GameControl : MonoBehaviour
 	private EnemySpawn invaders;
 
 	[SerializeField]
+	private EnemyMovement enemyMovement;
+
+	[SerializeField]
 	private Text scoreText;
 
 	[SerializeField]
@@ -41,12 +48,15 @@ public class GameControl : MonoBehaviour
 
 	private bool shipDestroyed;
     private float timer;
+	private float redTimer;
 	private int score;
+	private int invaderCount;
 
 	private GameObject shipInstance;
 	private Vector3 shipPoolPos = new Vector3(-10, -10);
 	private Vector3 shipStartPos = new Vector3(0, -4.5f);
-	private GameObject[] enemyCols;
+	private List<GameObject> enemyCols;
+	private List<GameObject> invaderList = new List<GameObject>();
 
 	public int PlayerLifes{
 		get { return playerLifes; }
@@ -62,11 +72,12 @@ public class GameControl : MonoBehaviour
 		get { return score; }
 		set { score = value; }
 	}
-
-	public GameObject ShipInstance{
-		get { return shipInstance; }
-		set { shipInstance = value; }
+	public int InvaderCount
+	{
+		get { return invaderCount;}
+		set { invaderCount = value;}
 	}
+
 	public Vector3 ShipPoolPos
 	{
 		get {return shipPoolPos;}
@@ -79,11 +90,17 @@ public class GameControl : MonoBehaviour
 		set {shipStartPos = value;} 
 	}
 
-    public GameObject[] EnemyCols
+    public List<GameObject> EnemyCols
 	{
 		get { return enemyCols;}
 		set { enemyCols = value;}
 	}
+
+	public List<GameObject> InvaderList
+	{
+		get { return invaderList;}
+		set { invaderList = value;}
+	}	
 
 	// Use this for initialization
 
@@ -104,15 +121,16 @@ public class GameControl : MonoBehaviour
 		shipInstance = Instantiate(ship);
 		CreateCols(difficulty);
 		invaders.SpawnEnemies(difficulty);
+		invaderCount = invaderList.Count;
 	}
 
-    private void CreateCols(int difficulty)
+    private void CreateCols(int colCount)
     {
-		enemyCols = new GameObject[difficulty];
-		for (int i = 0; i < difficulty; i++)
+		enemyCols = new List<GameObject>();
+		for (int i = 0; i < colCount; i++)
 		{
-			GameObject c = new GameObject("Col" + i + 1);
-			enemyCols[i] = c;
+			GameObject c = new GameObject("Col" + i);
+			enemyCols.Add(c);
 			c.transform.parent = GameObject.Find("Enemies").transform;
 		}
     }
@@ -120,19 +138,48 @@ public class GameControl : MonoBehaviour
     void Update ()
 	{
 		timer += Time.deltaTime;
-		if(timer > 1.0f)
-		{
-			GameObject selectedCol = enemyCols[UnityEngine.Random.Range(0, enemyCols.Length)];
-			if(selectedCol.transform.childCount > 0)
-			{
-				selectedCol.transform.GetChild(0).GetComponent<EnemyFire>().Fire();
-				timer = 0;
-			}
-		}
+		redTimer += Time.deltaTime;
+		RandomEnemyFire();
+		DeleteEmptyCols();
+		ChangeInvaderSpeed(invaderCount);
+		InstantiateRedInvader();
+		ManagePlayerLifes();
+		SetScoreText();
+	}
 
-		if(shipInstance.transform.position == shipPoolPos && shipDestroyed == false)
+	void BackToMenu()
+	{
+		SceneManager.LoadScene(0);
+	}
+
+	private void SetScoreText()
+	{
+		scoreText.text = "SCORE: " + score;
+	}
+
+	private void SetGameOverScreen()
+	{
+		gameOverText.text = "GAME OVER";
+		gameOverBackground.rectTransform.sizeDelta = new Vector2(100, 50);
+	}
+
+	private void ChangeInvaderSpeed(float p)
+	{
+		p /= 50;
+		if(p < 0.5f)
 		{
-			playerLifes -= 1;
+			enemyMovement.MovementSpeed = 0.5f * (float)(1 - Math.Sqrt(1 - 4 * (p * p)));
+		}
+		else
+		{
+			enemyMovement.MovementSpeed =  0.5f * (float)(Math.Sqrt(-((2 * p) - 3) * ((2 * p) - 1)) + 1);
+		}
+	}
+
+	private void ManagePlayerLifes()
+	{
+		if(playerLifes > 0 && shipInstance.transform.position == shipPoolPos && shipDestroyed == false)
+		{
 			shipDestroyed = true;
 		}
 		if(playerLifes > 0 && shipInstance.transform.position != shipPoolPos)
@@ -154,22 +201,39 @@ public class GameControl : MonoBehaviour
 			SetGameOverScreen();
 			Invoke("BackToMenu", 2.0f);
 		}
-		SetScoreText();
 	}
 
-	void BacktoMenu()
+	private void RandomEnemyFire()
 	{
-		SceneManager.LoadScene(0);
+		if(timer > 1.0f)
+		{
+			GameObject selectedCol = enemyCols[UnityEngine.Random.Range(0, enemyCols.Count)];
+			if(selectedCol.transform.childCount > 0)
+			{
+				selectedCol.transform.GetChild(0).GetComponent<EnemyFire>().Fire();
+				timer = 0;
+			}
+		}
 	}
 
-	private void SetScoreText()
+	private void InstantiateRedInvader()
 	{
-		scoreText.text = "SCORE: " + score;
+		if(redTimer >= 15)
+		{
+			Instantiate(redInvader);
+			redTimer = 0;
+		}
 	}
 
-	private void SetGameOverScreen()
+	private void DeleteEmptyCols()
 	{
-		gameOverText.text = "GAME OVER";
-		gameOverBackground.rectTransform.sizeDelta = new Vector2(100, 50);
+		for(int i = 0; i < enemyCols.Count; i++)
+		{
+			if(enemyCols[i].transform.childCount == 0)
+			{
+				Destroy(enemyCols[i]);
+				enemyCols.RemoveAt(i);
+			}
+		}
 	}
 }	

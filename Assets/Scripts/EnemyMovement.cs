@@ -1,90 +1,95 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class EnemyMovement : MonoBehaviour {
 
 
 	[SerializeField]
-	private float movementSpeed = 1;
+	private float movementSpeed;
+
+	public float MovementSpeed
+	{
+		get {return movementSpeed;}
+		set {movementSpeed = value;}
+	}
+
 	[SerializeField]
 	private float distanceX;
 	[SerializeField]
 	private float distanceY;
+
 	[SerializeField]
-	private float stepsX;
-	private float counter = 0;
+	private Transform leftBarrier;
+
+	public Transform LeftBarrier
+	{
+		get {return leftBarrier;}
+		set {leftBarrier = value;}
+	}
+
+	[SerializeField]
+	private Transform rightBarrier;
+	public Transform RightBarrier
+	{
+		get {return rightBarrier;}
+		set {rightBarrier = value;}
+	}
+
 	private float timer;
 	private bool goingRight = true;
+
+	public bool GoingRight
+	{
+		get {return goingRight;}
+		set {goingRight = value;}
+	}
+
 	private bool goingDown = false;
-
-
-	// Use this for initialization
-	void Start () {
-		Transform[] gameObjects = GetComponentsInChildren<Transform>();
-		foreach (Transform t in gameObjects)
-		{
-			if(t.gameObject.name.Contains("Col"))
-				Debug.Log(t.GetChild(0));
-		}
+	public bool GoingDown
+	{
+		get {return goingDown;}
+		set {goingDown = value;}
 	}
 	
-	// Update is called once per frame
-	void FixedUpdate () {
+	void Update () {
 		if(GameControl.instance.PlayerLifes > 0)
 		{
 			timer += Time.deltaTime;
 			if(timer >= movementSpeed)
 			{
-				if(goingDown == true)
+				foreach (GameObject g in GameControl.instance.InvaderList)
 				{
-					MoveDown();
-					return;
+					if(g != null)
+					{
+						g.GetComponent<Animator>().SetTrigger("move");
+					}
 				}
 				if(goingRight == true)
 				{
-					MoveRight();
-					return;
+					MoveHorizontal(distanceX);
 				}
 				if(goingRight == false)
 				{
-					MoveLeft();
-					return;
+					MoveHorizontal(-distanceX);
 				}
 			}
 		}
 	}
 
-	private void MoveRight()
+	public void MoveHorizontal(float x)
 	{
-		transform.position = new Vector2(transform.position.x + distanceX, transform.position.y);
+		transform.position = new Vector2(transform.position.x + x, transform.position.y);
 
-		counter ++;
 		timer = 0;
-		if(counter == stepsX)
-		{
-			goingDown = true;
-			goingRight = false;
-		}
+		goingDown = true;
 	}
 
-	private void MoveLeft()
-	{
-		transform.position = new Vector2(transform.position.x - distanceX, transform.position.y);
-
-		counter ++;
-		timer = 0;
-		if(counter == stepsX)
-		{
-			goingDown = true;
-			goingRight = true;
-		}
-	}
-
-	private void MoveDown()
+	public void MoveDown()
 	{
 		transform.position = new Vector2(transform.position.x, transform.position.y - distanceY);
-		counter = 0;
+
 		timer = 0;
 		goingDown = false;
 	}

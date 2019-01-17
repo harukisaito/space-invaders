@@ -53,9 +53,11 @@
      <Compile Include="Assets\Scripts\EnemySpawn.cs" />
      <Compile Include="Assets\Scripts\GameControl.cs" />
      <Compile Include="Assets\Scripts\MenuScript.cs" />
+     <Compile Include="Assets\Scripts\RedInvaderMovement.cs" />
      <Compile Include="Assets\Scripts\Ship.cs" />
      <Compile Include="Assets\Scripts\ShipFire.cs" />
      <Compile Include="Assets\Scripts\SpawnShieldsAndDestroy.cs" />
+     <Compile Include="Assets\Scripts\TurnMovement.cs" />
      <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark01.cs" />
      <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark01_UGUI.cs" />
      <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark02.cs" />

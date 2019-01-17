@@ -10,7 +10,6 @@ public class EnemyFire : MonoBehaviour
 	[SerializeField]
 	private float shootingSpeed;
 
-	// Use this for initialization
 	public void Fire()
 	{
 		if(GameControl.instance.PlayerLifes > 0)

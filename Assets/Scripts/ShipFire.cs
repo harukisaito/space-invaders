@@ -9,21 +9,15 @@ public class ShipFire : MonoBehaviour
 	
 	[SerializeField]
 	private int bulletSpeed;
-	[SerializeField]
-	private float fireRate = 1;
-	private float timer;
+
+	private GameObject bullet;
 
 
 	void Update () {
 
-		timer += Time.deltaTime;
-		if(timer >= fireRate)
+		if(Input.GetKeyDown(KeyCode.X))
 		{
-			if(Input.GetKeyDown(KeyCode.X))
-			{
-				Shoot();
-				timer = 0;
-			}
+			Shoot();
 		}
 	}
 
@@ -31,8 +25,11 @@ public class ShipFire : MonoBehaviour
 	{
 		if(GameControl.instance.ShipDestroyed == false)
 		{
-			GameObject bullet = Instantiate(projectile, transform.position + Vector3.up * 0.5f, Quaternion.identity) as GameObject;
-			bullet.GetComponent<Rigidbody2D>().AddForce(Vector2.up * bulletSpeed);
+			if(bullet == null)
+			{
+				bullet = Instantiate(projectile, transform.position + Vector3.up * 0.5f, Quaternion.identity) as GameObject;
+				bullet.GetComponent<Rigidbody2D>().AddForce(Vector2.up * bulletSpeed);
+			}
 		}
 	}
 }
